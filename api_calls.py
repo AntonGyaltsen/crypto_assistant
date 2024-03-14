@@ -3,17 +3,20 @@ from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import os
 from dotenv import load_dotenv
+from pyrogram import Client
 
-load_dotenv() # load environment variables from .env file
+load_dotenv()  # load environment variables from .env file
 
-url: str = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
+api_id = os.getenv('API_ID')
+api_hash = os.getenv('API_HASH')
+group_url = "@unfolded"  # Telegram group for getting latest news
+app = Client("my_session", api_id=api_id, api_hash=api_hash)
+url: str = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'  # Coinmarketcap API
 headers: dict = {
     'Accepts': 'application/json',
     'Accept-Encoding': 'deflate, gzip',
     'X-CMC_PRO_API_KEY': os.getenv('X_CMC_PRO_API_KEY')  # get API key from environment variable
 }
-# TODO: убрать ключ в исключаемый файл
-# TODO: прикрутить telegram api для загрузки новостей с crypto headlines (Саша говорил что это нетрудно)
 
 
 def get_crypto_price(ticker):
@@ -38,4 +41,16 @@ def get_crypto_price(ticker):
     return f'{round(ticker_price)}'
 
 
+def get_news_from_telegram():
+    with app:
+        all_messages = []
+        for message in app.get_chat_history(group_url, limit=10):
+            if message.caption:
+                all_messages.append(message.caption)
+            elif message.text:
+                all_messages.append(message.text)
+        return '\n'.join(all_messages)
+
+
 # print(get_crypto_price('BTC'))
+# print(get_news_from_telegram())
