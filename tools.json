@@ -1,0 +1,75 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "get_crypto_price",
+            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The symbol of the cryptocurrency for which to fetch the price, such as 'BTC' for Bitcoin or 'ETH' for Ethereum."
+                    }
+                },
+                "required": ["ticker"]
+            },
+            "responses": {
+                "type": "object",
+                "properties": {
+                    "price": {
+                        "type": "number",
+                        "description": "The latest market price of the requested cryptocurrency in USD."
+                    }
+                }
+            },
+            "errors": {
+                "type": "object",
+                "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "The HTTP status code representing the type of error encountered during the API call."
+                    },
+                    "error_message": {
+                        "type": "string",
+                        "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_news_from_telegram",
+            "description": "Retrieves the latest cryptocurrency news from a specified Telegram channel.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            },
+            "responses": {
+                "type": "object",
+                "properties": {
+                    "news": {
+                        "type": "array",
+                        "description": "A list containing the latest news items retrieved from the Telegram channel."
+                    }
+                }
+            },
+            "errors": {
+                "type": "object",
+                "properties": {
+                    "error_code": {
+                        "type": "integer",
+                        "description": "The HTTP status code indicating the type of error that occurred."
+                    },
+                    "error_message": {
+                        "type": "string",
+                        "description": "A message describing the error encountered when attempting to retrieve news from Telegram."
+                    }
+                }
+            }
+        }
+    }
+]

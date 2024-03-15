@@ -32,84 +32,9 @@ messages: List[dict] = [
     }
 ]
 
-tools: List[dict] = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_crypto_price",
-            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "ticker": {
-                        "type": "string",
-                        "description": "The symbol of the cryptocurrency for which to fetch the price, such as 'BTC' for Bitcoin or 'ETH' for Ethereum."
-                    }
-                },
-                "required": ["ticker"]
-            },
-            "responses": {
-                "type": "object",
-                "properties": {
-                    "price": {
-                        "type": "number",
-                        "description": "The latest market price of the requested cryptocurrency in USD."
-                    }
-                }
-            },
-            "errors": {
-                "type": "object",
-                "properties": {
-                    "error_code": {
-                        "type": "integer",
-                        "description": "The HTTP status code representing the type of error encountered during the API call."
-                    },
-                    "error_message": {
-                        "type": "string",
-                        "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
-                    }
-                }
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_news_from_telegram",
-            "description": "Retrieves the latest cryptocurrency news from a specified Telegram channel.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    # This function does not require any parameters.
-                },
-                "required": []  # No parameters are required.
-            },
-            "responses": {
-                "type": "object",
-                "properties": {
-                    "news": {
-                        "type": "array",
-                        "description": "A list containing the latest news items retrieved from the Telegram channel."
-                    }
-                }
-            },
-            "errors": {
-                "type": "object",
-                "properties": {
-                    "error_code": {
-                        "type": "integer",
-                        "description": "The HTTP status code indicating the type of error that occurred."
-                    },
-                    "error_message": {
-                        "type": "string",
-                        "description": "A message describing the error encountered when attempting to retrieve news "
-                                       "from Telegram."
-                    }
-                }
-            }
-        }
-    }
-]
+
+with open('tools.json', 'r') as file:
+    tools = json.load(file)
 
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
@@ -142,35 +67,40 @@ def execute_function_call(message):
     return results
 
 
-while True:
-    # Get input from the user.
-    user_content = input("👤 You: ")
+def main ():
+    while True:
+        # Get input from the user.
+        user_content = input("👤 You: ")
 
-    # Check if the user wants to exit the chat.
-    if user_content.strip().lower() == 'bye':
-        print('🤖 Bot: Goodbye!')
-        break
+        # Check if the user wants to exit the chat.
+        if user_content.strip().lower() == 'bye':
+            print('🤖 Bot: Goodbye!')
+            break
 
-    # Add the user's message to the list of messages.
-    messages.append({"role": "user", "content": user_content})
+        # Add the user's message to the list of messages.
+        messages.append({"role": "user", "content": user_content})
 
-    # Get the model's response.
-    chat_response = chat_completion_request(messages, tools=tools)
-    assistant_message = chat_response.choices[0].message
-
-    if assistant_message.tool_calls:
-        # Function call if chatgpt initiated tool_call.
-        results = execute_function_call(assistant_message)
-        # This just appends result of function call in messages.
-        messages.append({"role": "function", "tool_call_id": assistant_message.tool_calls[0].id,
-                         "name": assistant_message.tool_calls[0].function.name, "content": results})
-        # Diagnostic print for function call. Uncomment when you want to check function calling.
-        # print(chat_response.choices[0].message)
-        # Call chatgpt response again with information about price of the crypto.
+        # Get the model's response.
         chat_response = chat_completion_request(messages, tools=tools)
-        # Append this response with knowledge about current price to messages.
-        messages.append({"role": "assistant", "content": chat_response.choices[0].message.content})
-        print(f'🤖 Bot: {chat_response.choices[0].message.content}')
-    else:
-        messages.append({"role": "assistant", "content": assistant_message.content})
-        print(f'🤖 Bot: {assistant_message.content}')
+        assistant_message = chat_response.choices[0].message
+
+        if assistant_message.tool_calls:
+            # Function call if chatgpt initiated tool_call.
+            results = execute_function_call(assistant_message)
+            # This just appends result of function call in messages.
+            messages.append({"role": "function", "tool_call_id": assistant_message.tool_calls[0].id,
+                             "name": assistant_message.tool_calls[0].function.name, "content": results})
+            # Diagnostic print for function call. Uncomment when you want to check function calling.
+            # print(chat_response.choices[0].message)
+            # Call chatgpt response again with information about price of the crypto.
+            chat_response = chat_completion_request(messages, tools=tools)
+            # Append this response with knowledge about current price to messages.
+            messages.append({"role": "assistant", "content": chat_response.choices[0].message.content})
+            print(f'🤖 Bot: {chat_response.choices[0].message.content}')
+        else:
+            messages.append({"role": "assistant", "content": assistant_message.content})
+            print(f'🤖 Bot: {assistant_message.content}')
+
+
+if __name__ == '__main__':
+    main()
