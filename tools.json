@@ -3,7 +3,7 @@
         "type": "function",
         "function": {
             "name": "get_crypto_price",
-            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap.",
+            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap. If user asks for more than one cryptocurrence always use get_crypto_latest instead",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -71,5 +71,125 @@
                 }
             }
         }
+    },
+    {
+    "type": "function",
+    "function": {
+        "name": "get_historical_crypto_data",
+        "description": "Retrieves historical open, high, low, close, and volume data for a specified cryptocurrency pair from CryptoCompare.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "The symbol of the base cryptocurrency for which to fetch historical data, such as 'BTC' for Bitcoin."
+                },
+                "currency_transform": {
+                    "type": "string",
+                    "description": "The symbol of the target currency for price comparison, such as 'USD' for US Dollar."
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "The number of data points to return. For example, '20' would return the last 20 days of daily data."
+                },
+                "toTs": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The timestamp to fetch historical data up to, in UNIX format. If not provided, the current date is used."
+                }
+            },
+            "required": ["symbol", "currency_transform", "limit"]
+        },
+        "responses": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "description": "An array of historical data points, each containing open, high, low, close, and volume information for the given cryptocurrency pair."
+                }
+            }
+        },
+        "errors": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "integer",
+                    "description": "The HTTP status code representing the type of error encountered during the API call."
+                },
+                "error_message": {
+                    "type": "string",
+                    "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+                }
+            }
+        }
     }
+},
+    {
+    "type": "function",
+    "function": {
+        "name": "get_crypto_latest",
+        "description": "Retrieves a paginated list of all active cryptocurrencies along with their latest market data.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer",
+                    "description": "Specifies the page of results to retrieve in the paginated list."
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Defines the number of results to return per page. Default is usually set by the API provider."
+                },
+                "convert": {
+                    "type": "string",
+                    "description": "Allows the user to request market data conversion to a specified currency, like 'USD' or 'EUR'."
+                }
+            },
+            "required": []
+        },
+        "responses": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "description": "An array containing the cryptocurrency data, with each item providing details such as name, symbol, market cap, price, volume, and percentage changes."
+                },
+                "info": {
+                    "type": "object",
+                    "properties": {
+                        "pages": {
+                            "type": "integer",
+                            "description": "The total number of available pages of data."
+                        },
+                        "current_page": {
+                            "type": "integer",
+                            "description": "The current page number that this response represents."
+                        },
+                        "has_next_page": {
+                            "type": "boolean",
+                            "description": "A flag indicating if there are more pages available after the current page."
+                        },
+                        "has_prev_page": {
+                            "type": "boolean",
+                            "description": "A flag indicating if there are pages available before the current page."
+                        }
+                    }
+                }
+            }
+        },
+        "errors": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "integer",
+                    "description": "The HTTP status code representing the type of error encountered during the API call."
+                },
+                "error_message": {
+                    "type": "string",
+                    "description": "A detailed message describing the error if the API call is unsuccessful."
+                }
+            }
+        }
+    }
+}
 ]

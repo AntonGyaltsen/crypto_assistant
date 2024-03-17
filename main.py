@@ -4,8 +4,8 @@ from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 import api_calls
 
-GPT_MODEL = "gpt-3.5-turbo-0125"
-# GPT_MODEL = "gpt-4-0125-preview"
+# GPT_MODEL = "gpt-3.5-turbo-0125"
+GPT_MODEL = "gpt-4-0125-preview"
 
 client = OpenAI()
 
@@ -17,8 +17,9 @@ messages: List[dict] = [
                    "expert advice and insights to help users make informed "
                    "cryptocurrency investment decisions. It utilizes "
                    "up-to-date market analysis, technical analysis, "
-                   "and fundamental analysis to provide recommendations. Do not check latest news until user"
-                   "explicitly asks you for the news."
+                   "and fundamental analysis to provide recommendations."
+                   # "Initial use of function calls: before your first answer to user fetch data about current"
+                   # "price of Bitcoin, latest news and historical data for Bitcoin using provided functions."
                    "Clarification: "
                    "When faced with ambiguous queries, the GPT should ask for "
                    "clarification"
@@ -31,7 +32,6 @@ messages: List[dict] = [
 
     }
 ]
-
 
 with open('tools.json', 'r') as file:
     tools = json.load(file)
@@ -53,21 +53,37 @@ def chat_completion_request(messages, tools=None, tool_choice=None, model=GPT_MO
         return e
 
 
+@retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
 def execute_function_call(message):
-    if message.tool_calls[0].function.name == "get_crypto_price":
-        # Get ticker from GPT
-        arguments_str = json.loads(message.tool_calls[0].function.arguments)
-        ticker = arguments_str["ticker"]
-        # Call of actual function by GPT
-        results = api_calls.get_crypto_price(ticker)
-    else:
-        results = f"Error: function {message.tool_calls[0].function.name} does not exist"
-    if message.tool_calls[0].function.name == "get_news_from_telegram":
-        results = api_calls.get_news_from_telegram()
-    return results
+    try:
+        if message.tool_calls[0].function.name == "get_crypto_price":
+            # Get ticker from GPT
+            arguments_str = json.loads(message.tool_calls[0].function.arguments)
+            ticker = arguments_str["ticker"]
+            # Call of actual function by GPT
+            results = api_calls.get_crypto_price(ticker)
+            print(results)  # Diagnostic print of result returned by API
+        elif message.tool_calls[0].function.name == "get_historical_crypto_data":
+            arguments_str = json.loads(message.tool_calls[0].function.arguments)
+            symbol = arguments_str['symbol']
+            currency_transform = arguments_str["currency_transform"]
+            limit = arguments_str['limit']
+            results = api_calls.get_historical_data(symbol, currency_transform, limit)
+        elif message.tool_calls[0].function.name == "get_news_from_telegram":
+            results = api_calls.get_news_from_telegram()
+        elif message.tool_calls[0].function.name == "get_crypto_latest":
+            results = api_calls.get_crypto_latest()
+        else:
+            results = f"Error: function {message.tool_calls[0].function.name} does not exist"
+        return results
+    except Exception as e:
+        print("Unable to generate Call Function")
+        print(f"Exception: {e}")
+        return e
 
 
-def main ():
+def main():
+    print(f'Model in use: {GPT_MODEL}')
     while True:
         # Get input from the user.
         user_content = input("👤 You: ")
@@ -91,9 +107,11 @@ def main ():
             messages.append({"role": "function", "tool_call_id": assistant_message.tool_calls[0].id,
                              "name": assistant_message.tool_calls[0].function.name, "content": results})
             # Diagnostic print for function call. Uncomment when you want to check function calling.
-            # print(chat_response.choices[0].message)
+            print(chat_response.choices[0].message)
             # Call chatgpt response again with information about price of the crypto.
             chat_response = chat_completion_request(messages, tools=tools)
+            if chat_response.choices[0].message.content is None:
+                chat_response = chat_completion_request(messages, tools=tools)
             # Append this response with knowledge about current price to messages.
             messages.append({"role": "assistant", "content": chat_response.choices[0].message.content})
             print(f'🤖 Bot: {chat_response.choices[0].message.content}')
