@@ -3,7 +3,7 @@
         "type": "function",
         "function": {
             "name": "get_crypto_price",
-            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap. If user asks for more than one cryptocurrence always use get_crypto_latest instead",
+            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap. Use it only for one cryptocurrency. For multiple always use get_crypto_latest instead.",
             "parameters": {
                 "type": "object",
                 "properties": {

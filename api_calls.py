@@ -69,7 +69,7 @@ def get_crypto_price(ticker) -> str:
     }
     try:
         price_object = get_response_object(headers, parameters, url)
-        return f'{round(price_object["data"][ticker]["quote"]["USD"]["price"])}'
+        return f'{round(price_object["data"][ticker]["quote"]["USD"]["price"], 2)}'
     except Exception as e:
         print("Unable to get price")
         print(f"Exception: {e}")

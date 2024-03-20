@@ -4,8 +4,8 @@ from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 import api_calls
 
-# GPT_MODEL = "gpt-3.5-turbo-0125"
-GPT_MODEL = "gpt-4-0125-preview"
+GPT_MODEL = "gpt-3.5-turbo-0125"
+# GPT_MODEL = "gpt-4-0125-preview"
 
 client = OpenAI()
 
@@ -54,27 +54,27 @@ def chat_completion_request(messages, tools=None, tool_choice=None, model=GPT_MO
 
 
 @retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
-def execute_function_call(message):
+def execute_function_call(tool_call):
     try:
-        if message.tool_calls[0].function.name == "get_crypto_price":
+        if tool_call.name == "get_crypto_price":
             # Get ticker from GPT
-            arguments_str = json.loads(message.tool_calls[0].function.arguments)
+            arguments_str = json.loads(tool_call.arguments)
             ticker = arguments_str["ticker"]
             # Call of actual function by GPT
             results = api_calls.get_crypto_price(ticker)
             print(results)  # Diagnostic print of result returned by API
-        elif message.tool_calls[0].function.name == "get_historical_crypto_data":
-            arguments_str = json.loads(message.tool_calls[0].function.arguments)
+        elif tool_call.name == "get_historical_crypto_data":
+            arguments_str = json.loads(tool_call.arguments)
             symbol = arguments_str['symbol']
             currency_transform = arguments_str["currency_transform"]
             limit = arguments_str['limit']
             results = api_calls.get_historical_data(symbol, currency_transform, limit)
-        elif message.tool_calls[0].function.name == "get_news_from_telegram":
+        elif tool_call.name == "get_news_from_telegram":
             results = api_calls.get_news_from_telegram()
-        elif message.tool_calls[0].function.name == "get_crypto_latest":
+        elif tool_call.name == "get_crypto_latest":
             results = api_calls.get_crypto_latest()
         else:
-            results = f"Error: function {message.tool_calls[0].function.name} does not exist"
+            results = f"Error: function {tool_call.name} does not exist"
         return results
     except Exception as e:
         print("Unable to generate Call Function")
@@ -87,7 +87,6 @@ def main():
     while True:
         # Get input from the user.
         user_content = input("👤 You: ")
-
         # Check if the user wants to exit the chat.
         if user_content.strip().lower() == 'bye':
             print('🤖 Bot: Goodbye!')
@@ -101,23 +100,23 @@ def main():
         assistant_message = chat_response.choices[0].message
 
         if assistant_message.tool_calls:
-            # Function call if chatgpt initiated tool_call.
-            results = execute_function_call(assistant_message)
-            # This just appends result of function call in messages.
-            messages.append({"role": "function", "tool_call_id": assistant_message.tool_calls[0].id,
-                             "name": assistant_message.tool_calls[0].function.name, "content": results})
-            # Diagnostic print for function call. Uncomment when you want to check function calling.
-            print(chat_response.choices[0].message)
+            #  We need loop if it happens to make several functions calls at once 
+            for i in range(len(assistant_message.tool_calls)):
+                tool_call = assistant_message.tool_calls[i]
+                # Function call if chatgpt initiated tool_call.
+                results = execute_function_call(tool_call.function)
+                # This just appends result of function call in messages.
+                messages.append({"role": "function", "tool_call_id": tool_call.id,
+                                 "name": tool_call.function.name, "content": results})
+                # Diagnostic print for function call. Uncomment when you want to check function calling.
+                print(chat_response.choices[0].message)
             # Call chatgpt response again with information about price of the crypto.
-            chat_response = chat_completion_request(messages, tools=tools)
-            if chat_response.choices[0].message.content is None:
-                chat_response = chat_completion_request(messages, tools=tools)
-            # Append this response with knowledge about current price to messages.
-            messages.append({"role": "assistant", "content": chat_response.choices[0].message.content})
-            print(f'🤖 Bot: {chat_response.choices[0].message.content}')
-        else:
-            messages.append({"role": "assistant", "content": assistant_message.content})
-            print(f'🤖 Bot: {assistant_message.content}')
+            # Do not call this response with tools=tools otherwise gpt-3.5 can start making excessive function calls
+            chat_response = chat_completion_request(messages)
+            assistant_message = chat_response.choices[0].message
+
+        messages.append({"role": "assistant", "content": assistant_message.content})
+        print(f'🤖 Bot: {assistant_message.content}')
 
 
 if __name__ == '__main__':
