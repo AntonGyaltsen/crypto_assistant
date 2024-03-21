@@ -1,4 +1,4 @@
-from requests import Request, Session
+from requests import Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import os
@@ -15,14 +15,16 @@ api_hash = os.getenv('API_HASH')
 GROUP_URL = "@unfolded"  # Telegram group for getting latest news
 app = Client("my_session", api_id=api_id, api_hash=api_hash)
 
-
-@retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
-def get_historical_data(symbol='BTC', currency_transform='USD', limit='20') -> str:
+@retry(wait=wait_random_exponential(multiplier=1, max=40),
+       stop=stop_after_attempt(3))
+def get_historical_data(symbol='BTC', currency_transform='USD',
+                        limit='20') -> str | Exception:
     """Return historical data using Cryptocompare API"""
     headers: dict = {
         'Accepts': 'application/json',
         'Accept-Encoding': 'deflate, gzip',
-        'authorization': os.getenv('CRYPTO_API_KEY')  # get API key from environment variable
+        'authorization': os.getenv('CRYPTO_API_KEY')
+        # get API key from environment variable
     }
     parameters: dict = {
         # 'start': '1',
@@ -51,15 +53,19 @@ def get_response_object(headers: dict, parameters: dict, url: str) -> json:
     return data
 
 
-@retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
-def get_crypto_price(ticker) -> str:
-    """Function to get cryptocurrency which is used by Chatgpt during function call"""
+@retry(wait=wait_random_exponential(multiplier=1, max=40),
+       stop=stop_after_attempt(3))
+def get_crypto_price(ticker) -> str | Exception:
+    """Function to get cryptocurrency which is used by Chatgpt during
+    function call"""
     # ticker = input("Enter the ticker: ").upper()
-    url: str = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'  # Coinmarketcap API
+    url: str = ('https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes'
+                '/latest')  # Coinmarketcap API
     headers: dict = {
         'Accepts': 'application/json',
         'Accept-Encoding': 'deflate, gzip',
-        'X-CMC_PRO_API_KEY': os.getenv('X_CMC_PRO_API_KEY')  # get API key from environment variable
+        'X-CMC_PRO_API_KEY': os.getenv('X_CMC_PRO_API_KEY')
+        # get API key from environment variable
     }
     parameters: dict = {
         # 'start': '1',
@@ -69,22 +75,27 @@ def get_crypto_price(ticker) -> str:
     }
     try:
         price_object = get_response_object(headers, parameters, url)
-        return f'{round(price_object["data"][ticker]["quote"]["USD"]["price"], 2)}'
+        return f'{round(price_object["data"][ticker]["quote"]["USD"]["price"],
+                        2)}'
     except Exception as e:
         print("Unable to get price")
         print(f"Exception: {e}")
         return e
 
 
-@retry(wait=wait_random_exponential(multiplier=1, max=40), stop=stop_after_attempt(3))
-def get_crypto_latest() -> str:
-    """Function to get cryptocurrency which is used by Chatgpt during function call"""
+@retry(wait=wait_random_exponential(multiplier=1, max=40),
+       stop=stop_after_attempt(3))
+def get_crypto_latest() -> str | Exception:
+    """Function to get cryptocurrency which is used by Chatgpt during
+    function call"""
     # ticker = input("Enter the ticker: ").upper()
-    url: str = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'  # Coinmarketcap API
+    url: str = ('https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings'
+                '/latest')  # Coinmarketcap API
     headers: dict = {
         'Accepts': 'application/json',
         'Accept-Encoding': 'deflate, gzip',
-        'X-CMC_PRO_API_KEY': os.getenv('X_CMC_PRO_API_KEY')  # get API key from environment variable
+        'X-CMC_PRO_API_KEY': os.getenv('X_CMC_PRO_API_KEY')
+        # get API key from environment variable
     }
     parameters: dict = {
         # 'start': '1',
