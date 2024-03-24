@@ -38,11 +38,12 @@ def llm_cost_calculator_decorator(llm_function):
         total_cost = ((prompt_tokens * input_price) + (completion_tokens *
                                                        output_price))
         session.add_to_total_cost(total_cost)
-        print(f"Prompt tokens: {prompt_tokens}, "
-              f"Completion tokens: {completion_tokens}, "
-              f"Total tokens: {total_tokens}")
-        print(f"The total cost for the below chat completion: "
-              f"${total_cost:.4f}")
+        # Uncomment below if you want to get cost for each prompt.
+        # print(f"Prompt tokens: {prompt_tokens}, "
+        #       f"Completion tokens: {completion_tokens}, "
+        #       f"Total tokens: {total_tokens}")
+        # print(f"The total cost for the below chat completion: "
+        #       f"${total_cost:.4f}")
 
         return response
 

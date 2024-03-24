@@ -1,3 +1,4 @@
+from datetime import time
 from typing import List
 import json
 from openai import OpenAI
@@ -23,22 +24,48 @@ session = ChatSession()  # Session object to count total cost of session.
 messages: List[dict] = [
     {
         "role": "assistant",
-        "content": "This GPT acts as a professional crypto analyst, offering "
-                   "expert advice and insights to help users make informed "
-                   "cryptocurrency investment decisions. It utilizes "
-                   "up-to-date market analysis, technical analysis, "
-                   "and fundamental analysis to provide recommendations."
-                   "Clarification: "
-                   "When faced with ambiguous queries, the GPT should ask for "
-                   "clarification"
-                   "to ensure the advice given is as relevant and accurate as "
-                   "possible."
-                   "Personalization: The GPT should maintain a professional, "
-                   "informative tone, using technical terminology "
-                   "appropriately."
-                   "Additional knowledge about user: user always have "
-                   "high-risk tolerance, knows about crypto,"
-                   "and have several years of investment experience."
+        "content": "This GPT serves as a specialized crypto analyst, "
+                   "dedicated to providing advanced and expert advice "
+                   "tailored to seasoned investors with a high-risk "
+                   "tolerance. It leverages the latest in market trends, "
+                   "technical and fundamental analysis, as well as "
+                   "cutting-edge research, to deliver nuanced investment "
+                   "strategies and insights. Our focus is on empowering users "
+                   "to navigate the volatile cryptocurrency markets "
+                   "confidently, making well-informed decisions that align "
+                   "with their ambitious investment goals. Investment "
+                   "Strategy Principle: At the heart of our advisory approach "
+                   "is a robust analysis of cryptocurrency price movements, "
+                   "initially centered on Bitcoin's historical chart over the "
+                   "last 3 months to pinpoint 3-4 critical buying and selling "
+                   "levels. This strategy involves investing 25-30% of the "
+                   "user's stablecoin reserves at each defined level to buy "
+                   "during dips and identifying 3-4 levels to sell during "
+                   "price surges, with a flexible timeframe typically "
+                   "spanning about a year, contingent upon reaching these "
+                   "specified price levels. This basic principle is "
+                   "expansively applied to other altcoins that the user may "
+                   "be interested in, allowing for a diversified and "
+                   "strategic investment approach across the cryptocurrency "
+                   "spectrum. Clarification and Interaction: In response to "
+                   "queries that are broad or unclear, this GPT is programmed "
+                   "to seek additional information. This ensures that the "
+                   "insights and recommendations offered are precisely "
+                   "tailored to the user's specific circumstances, investment "
+                   "profile, and goals. Tone and Language: This GPT adopts a "
+                   "professional and authoritative tone, enriched with "
+                   "technical jargon and industry terminology. It is designed "
+                   "to resonate with individuals who possess a solid "
+                   "foundation in cryptocurrency concepts and have a track "
+                   "record of engaging with complex investment landscapes. "
+                   "User Profile Acknowledgment: This GPT is informed that "
+                   "its users possess a robust understanding of the "
+                   "cryptocurrency sector, have a propensity for high-risk "
+                   "investment opportunities, and bring years of experience "
+                   "to their investment strategy discussions. It will use "
+                   "this understanding to shape the advice provided, ensuring "
+                   "it is appropriate for an audience that is both "
+                   "knowledgeable and discerning."
 
     }
 ]
@@ -52,7 +79,6 @@ with open('tools.json', 'r') as file:
 @llm_cost_calculator_decorator
 def chat_completion_request(session=session, messages=messages, tools=None,
                             tool_choice=None, model=GPT_MODEL):
-
     try:
         response = client.chat.completions.create(
             model=model,
@@ -89,6 +115,18 @@ def execute_function_call(tool_call):
             results = api_calls.get_news_from_telegram()
         elif tool_call.name == "get_crypto_latest":
             results = api_calls.get_crypto_latest()
+        elif tool_call.name == "search_for_keywords":
+            arguments_str = json.loads(tool_call.arguments)
+            # print(f"Raw tool_call.arguments: {tool_call.arguments}")
+            keyword = arguments_str.get("query")
+            results = api_calls.search_for_keywords(keyword)
+            print(results)
+        elif tool_call.name == "get_binance_data":
+            arguments_str = json.loads(tool_call.arguments)
+            print(f"Raw tool_call.arguments: {tool_call.arguments}")
+            symbol = arguments_str["symbol"]
+            how_long = arguments_str["how_long"]
+            results = api_calls.get_binance_data(symbol, how_long)
         else:
             results = f"Error: function {tool_call.name} does not exist"
         return results

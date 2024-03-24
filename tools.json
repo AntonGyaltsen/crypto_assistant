@@ -191,5 +191,87 @@
             }
         }
     }
+},
+   {
+  "type": "function",
+  "function": {
+    "name": "search_for_keywords",
+    "description": "Searches for keywords within messages of a specified group and returns messages with their corresponding dates. It is used whenever user asks to find information about specific subject.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The keyword or phrase to search for within the messages."
+        }
+      },
+      "required": ["query"]
+    },
+    "responses": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "description": "A list of messages containing the keyword, each with its creation date and content."
+        }
+      }
+    },
+    "errors": {
+      "type": "object",
+      "properties": {
+        "error_code": {
+          "type": "integer",
+          "description": "The HTTP status code indicating the type of error that occurred."
+        },
+        "error_message": {
+          "type": "string",
+          "description": "A message describing the error encountered when attempting to search for keywords."
+        }
+      }
+    }
+  }
+},
+    {
+    "type": "function",
+    "function": {
+        "name": "get_binance_data",
+        "description": "Retrieves and processes historical cryptocurrency data from Binance for a specified symbol and period. It calculates Simple Moving Averages (SMAs) for trend analysis, identifies potential support and resistance levels, and returns the data as a JSON string, including the processed historical data, support levels, and resistance levels.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "symbol": {
+                    "type": "string",
+                    "description": "The symbol pair to fetch historical data for, such as 'BTCUSDT' for Bitcoin to USDT. Default is 'BTCUSDT'."
+                },
+                "how_long": {
+                    "type": "integer",
+                    "description": "The number of days for which to fetch historical data, counting backwards from the current date. Default is 90 days."
+                }
+            },
+            "required": ["symbol", "how_long"]
+        },
+        "responses": {
+            "type": "object",
+            "properties": {
+                "json_data": {
+                    "type": "string",
+                    "description": "A JSON string containing the processed historical data with columns for open, high, low, close, volume, SMA_50, SMA_200, is_local_max, and is_local_min, along with support and resistance levels."
+                }
+            }
+        },
+        "errors": {
+            "type": "object",
+            "properties": {
+                "error_code": {
+                    "type": "integer",
+                    "description": "The HTTP status code representing the type of error encountered during the API call."
+                },
+                "error_message": {
+                    "type": "string",
+                    "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+                }
+            }
+        }
+    }
 }
 ]
