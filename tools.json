@@ -1,277 +1,304 @@
 [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_crypto_price",
-            "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap. Use it only for one cryptocurrency. For multiple always use get_crypto_latest instead.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "ticker": {
-                        "type": "string",
-                        "description": "The symbol of the cryptocurrency for which to fetch the price, such as 'BTC' for Bitcoin or 'ETH' for Ethereum."
-                    }
-                },
-                "required": ["ticker"]
-            },
-            "responses": {
-                "type": "object",
-                "properties": {
-                    "price": {
-                        "type": "number",
-                        "description": "The latest market price of the requested cryptocurrency in USD."
-                    }
-                }
-            },
-            "errors": {
-                "type": "object",
-                "properties": {
-                    "error_code": {
-                        "type": "integer",
-                        "description": "The HTTP status code representing the type of error encountered during the API call."
-                    },
-                    "error_message": {
-                        "type": "string",
-                        "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
-                    }
-                }
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_news_from_telegram",
-            "description": "Retrieves the latest cryptocurrency news from a specified Telegram channel.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": []
-            },
-            "responses": {
-                "type": "object",
-                "properties": {
-                    "news": {
-                        "type": "array",
-                        "description": "A list containing the latest news items retrieved from the Telegram channel."
-                    }
-                }
-            },
-            "errors": {
-                "type": "object",
-                "properties": {
-                    "error_code": {
-                        "type": "integer",
-                        "description": "The HTTP status code indicating the type of error that occurred."
-                    },
-                    "error_message": {
-                        "type": "string",
-                        "description": "A message describing the error encountered when attempting to retrieve news from Telegram."
-                    }
-                }
-            }
-        }
-    },
-    {
+  {
     "type": "function",
     "function": {
-        "name": "get_historical_crypto_data",
-        "description": "Retrieves historical open, high, low, close, and volume data for a specified cryptocurrency pair from CryptoCompare.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "symbol": {
-                    "type": "string",
-                    "description": "The symbol of the base cryptocurrency for which to fetch historical data, such as 'BTC' for Bitcoin."
-                },
-                "currency_transform": {
-                    "type": "string",
-                    "description": "The symbol of the target currency for price comparison, such as 'USD' for US Dollar."
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "The number of data points to return. For example, '20' would return the last 20 days of daily data."
-                },
-                "toTs": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "The timestamp to fetch historical data up to, in UNIX format. If not provided, the current date is used."
-                }
-            },
-            "required": ["symbol", "currency_transform", "limit"]
+      "name": "get_crypto_price",
+      "description": "Fetches the current price of a specified cryptocurrency from CoinMarketCap. Use it only for one cryptocurrency. For multiple always use get_crypto_latest instead.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "The symbol of the cryptocurrency for which to fetch the price, such as 'BTC' for Bitcoin or 'ETH' for Ethereum."
+          }
         },
-        "responses": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "description": "An array of historical data points, each containing open, high, low, close, and volume information for the given cryptocurrency pair."
-                }
-            }
-        },
-        "errors": {
-            "type": "object",
-            "properties": {
-                "error_code": {
-                    "type": "integer",
-                    "description": "The HTTP status code representing the type of error encountered during the API call."
-                },
-                "error_message": {
-                    "type": "string",
-                    "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
-                }
-            }
-        }
-    }
-},
-    {
-    "type": "function",
-    "function": {
-        "name": "get_crypto_latest",
-        "description": "Retrieves a paginated list of all active cryptocurrencies along with their latest market data.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "description": "Specifies the page of results to retrieve in the paginated list."
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Defines the number of results to return per page. Default is usually set by the API provider."
-                },
-                "convert": {
-                    "type": "string",
-                    "description": "Allows the user to request market data conversion to a specified currency, like 'USD' or 'EUR'."
-                }
-            },
-            "required": []
-        },
-        "responses": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "description": "An array containing the cryptocurrency data, with each item providing details such as name, symbol, market cap, price, volume, and percentage changes."
-                },
-                "info": {
-                    "type": "object",
-                    "properties": {
-                        "pages": {
-                            "type": "integer",
-                            "description": "The total number of available pages of data."
-                        },
-                        "current_page": {
-                            "type": "integer",
-                            "description": "The current page number that this response represents."
-                        },
-                        "has_next_page": {
-                            "type": "boolean",
-                            "description": "A flag indicating if there are more pages available after the current page."
-                        },
-                        "has_prev_page": {
-                            "type": "boolean",
-                            "description": "A flag indicating if there are pages available before the current page."
-                        }
-                    }
-                }
-            }
-        },
-        "errors": {
-            "type": "object",
-            "properties": {
-                "error_code": {
-                    "type": "integer",
-                    "description": "The HTTP status code representing the type of error encountered during the API call."
-                },
-                "error_message": {
-                    "type": "string",
-                    "description": "A detailed message describing the error if the API call is unsuccessful."
-                }
-            }
-        }
-    }
-},
-   {
-  "type": "function",
-  "function": {
-    "name": "search_for_keywords",
-    "description": "Searches for keywords within messages of a specified group and returns messages with their corresponding dates. It is used whenever user asks to find information about specific subject.",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "query": {
-          "type": "string",
-          "description": "The keyword or phrase to search for within the messages."
+        "required": [
+          "ticker"
+        ]
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "description": "The latest market price of the requested cryptocurrency in USD."
+          }
         }
       },
-      "required": ["query"]
-    },
-    "responses": {
-      "type": "object",
-      "properties": {
-        "messages": {
-          "type": "array",
-          "description": "A list of messages containing the keyword, each with its creation date and content."
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code representing the type of error encountered during the API call."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+          }
         }
       }
-    },
-    "errors": {
-      "type": "object",
-      "properties": {
-        "error_code": {
-          "type": "integer",
-          "description": "The HTTP status code indicating the type of error that occurred."
-        },
-        "error_message": {
-          "type": "string",
-          "description": "A message describing the error encountered when attempting to search for keywords."
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_news_from_telegram",
+      "description": "Retrieves the latest cryptocurrency news from a specified Telegram channel.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "news": {
+            "type": "array",
+            "description": "A list containing the latest news items retrieved from the Telegram channel."
+          }
         }
+      },
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code indicating the type of error that occurred."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A message describing the error encountered when attempting to retrieve news from Telegram."
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_historical_crypto_data",
+      "description": "Retrieves historical open, high, low, close, and volume data for a specified cryptocurrency pair from CryptoCompare.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "The symbol of the base cryptocurrency for which to fetch historical data, such as 'BTC' for Bitcoin."
+          },
+          "currency_transform": {
+            "type": "string",
+            "description": "The symbol of the target currency for price comparison, such as 'USD' for US Dollar."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The number of data points to return. For example, '20' would return the last 20 days of daily data."
+          },
+          "toTs": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp to fetch historical data up to, in UNIX format. If not provided, the current date is used."
+          }
+        },
+        "required": [
+          "symbol",
+          "currency_transform",
+          "limit"
+        ]
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "description": "An array of historical data points, each containing open, high, low, close, and volume information for the given cryptocurrency pair."
+          }
+        }
+      },
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code representing the type of error encountered during the API call."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_crypto_latest",
+      "description": "Retrieves a paginated list of all active cryptocurrencies along with their latest market data.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Specifies the page of results to retrieve in the paginated list."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Defines the number of results to return per page. Default is usually set by the API provider."
+          },
+          "convert": {
+            "type": "string",
+            "description": "Allows the user to request market data conversion to a specified currency, like 'USD' or 'EUR'."
+          }
+        },
+        "required": []
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "description": "An array containing the cryptocurrency data, with each item providing details such as name, symbol, market cap, price, volume, and percentage changes."
+          },
+          "info": {
+            "type": "object",
+            "properties": {
+              "pages": {
+                "type": "integer",
+                "description": "The total number of available pages of data."
+              },
+              "current_page": {
+                "type": "integer",
+                "description": "The current page number that this response represents."
+              },
+              "has_next_page": {
+                "type": "boolean",
+                "description": "A flag indicating if there are more pages available after the current page."
+              },
+              "has_prev_page": {
+                "type": "boolean",
+                "description": "A flag indicating if there are pages available before the current page."
+              }
+            }
+          }
+        }
+      },
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code representing the type of error encountered during the API call."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A detailed message describing the error if the API call is unsuccessful."
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_for_keywords",
+      "description": "Searches for keywords within messages of a specified group and returns messages with their corresponding dates. It is used whenever user asks to find information about specific subject.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The keyword or phrase to search for within the messages."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "description": "A list of messages containing the keyword, each with its creation date and content."
+          }
+        }
+      },
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code indicating the type of error that occurred."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A message describing the error encountered when attempting to search for keywords."
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_binance_data",
+      "description": "Retrieves and processes historical cryptocurrency data from Binance for a specified symbol and period. It calculates Simple Moving Averages (SMAs) for trend analysis, identifies potential support and resistance levels, and returns the data as a JSON string, including the processed historical data, support levels, and resistance levels.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "The symbol pair to fetch historical data for, such as 'BTCUSDT' for Bitcoin to USDT. Default is 'BTCUSDT'."
+          },
+          "how_long": {
+            "type": "integer",
+            "description": "The number of days for which to fetch historical data, counting backwards from the current date. Default is 90 days."
+          }
+        },
+        "required": [
+          "symbol",
+          "how_long"
+        ]
+      },
+      "responses": {
+        "type": "object",
+        "properties": {
+          "json_data": {
+            "type": "string",
+            "description": "A JSON string containing the processed historical data with columns for open, high, low, close, volume, SMA_50, SMA_200, is_local_max, and is_local_min, along with support and resistance levels."
+          }
+        }
+      },
+      "errors": {
+        "type": "object",
+        "properties": {
+          "error_code": {
+            "type": "integer",
+            "description": "The HTTP status code representing the type of error encountered during the API call."
+          },
+          "error_message": {
+            "type": "string",
+            "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "agent_discussion",
+      "description": "Conducts a simulated discussion between two agents, conservative and aggressive, based on a previous conversation. It initiates the discussion with a request for opinions on a subject, then iteratively generates and prints responses from both agents. Each agent's response influences the subsequent response of the other, creating a back-and-forth dialogue for a set number of iterations. The function internally creates instances of the 'Agent' class for each agent's role, using distinct prompts that set their behavior as conservative or aggressive. The function requires no arguments to be called, as it uses the fixed initial information and subject within its scope. You can call this function only one time!",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "response": {
+        "type": "string",
+        "description": "The complete simulated discussion as a string, representing the back-and-forth dialogue between the conservative and aggressive agents."
       }
     }
   }
-},
-    {
-    "type": "function",
-    "function": {
-        "name": "get_binance_data",
-        "description": "Retrieves and processes historical cryptocurrency data from Binance for a specified symbol and period. It calculates Simple Moving Averages (SMAs) for trend analysis, identifies potential support and resistance levels, and returns the data as a JSON string, including the processed historical data, support levels, and resistance levels.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "symbol": {
-                    "type": "string",
-                    "description": "The symbol pair to fetch historical data for, such as 'BTCUSDT' for Bitcoin to USDT. Default is 'BTCUSDT'."
-                },
-                "how_long": {
-                    "type": "integer",
-                    "description": "The number of days for which to fetch historical data, counting backwards from the current date. Default is 90 days."
-                }
-            },
-            "required": ["symbol", "how_long"]
-        },
-        "responses": {
-            "type": "object",
-            "properties": {
-                "json_data": {
-                    "type": "string",
-                    "description": "A JSON string containing the processed historical data with columns for open, high, low, close, volume, SMA_50, SMA_200, is_local_max, and is_local_min, along with support and resistance levels."
-                }
-            }
-        },
-        "errors": {
-            "type": "object",
-            "properties": {
-                "error_code": {
-                    "type": "integer",
-                    "description": "The HTTP status code representing the type of error encountered during the API call."
-                },
-                "error_message": {
-                    "type": "string",
-                    "description": "A detailed message describing the error if the API call is unsuccessful or the input is invalid."
-                }
-            }
-        }
-    }
-}
 ]

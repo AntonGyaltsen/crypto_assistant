@@ -16,6 +16,36 @@ CYAN = '\033[96m'
 YELLOW = '\033[93m'
 # ANSI escape code to reset to default color
 RESET_COLOR = '\033[0m'
+NEON_GREEN = '\033[92m'
+
+
+class Agent:
+    """Class for agents discussion implementation.
+    system_prompt is initial system prompt which defines role which model plays.
+    agent_input is everything what user entered and all previous model answers.
+    """
+
+    def __init__(self, system_prompt, agent_input):
+        self.system_prompt = system_prompt
+        self.agent_input = agent_input
+        self.agent_messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": self.agent_input}]
+
+
+    def generate_response(self, new_input):
+        """Generate response using initial arguments"""
+        self.agent_messages.append({"role": "user", "content": new_input})
+        chat_completion = chat_completion_request(
+            messages=self.agent_messages)
+
+        response_content = chat_completion.choices[0].message.content
+
+        self.agent_messages.append({"role": "assistant", "content":
+            response_content})
+
+        return response_content
+
 
 client = OpenAI()
 session = ChatSession()  # Session object to count total cost of session.
@@ -70,13 +100,36 @@ messages: List[dict] = [
     }
 ]
 
+
+conservative_prompt = ("You are conservative investor whose task is to be "
+                       "cautious and warn about possible negative "
+                       "consequences. You are part of the team who discuss "
+                       "optimal investment strategies. Your task is to stay "
+                       "in role and give cautionary advices to optimise "
+                       "strategy.You must continue discussion with your "
+                       "conservative"
+                       "colleague till you find optimal agreememt that both of"
+                       "you accept.")
+aggressive_prompt = ("You are aggressive but very smart investor whose task "
+                     "is to maximize profit. You are part of the team who "
+                     "discuss optimal investment strategies. Your task is to "
+                     "stay"
+                     "in role and maximise profit thus optimising strategy. "
+                     "You must continue discussion with your conservative "
+                     "colleague till you find optimal agreement that both of "
+                     "you accept. But you must never agree fully with your "
+                     "conservative colleague and just accept his position. "
+                     "You must change his position to agree to risk more.")
+
 with open('tools.json', 'r') as file:
     tools = json.load(file)
 
 
-@retry(wait=wait_random_exponential(multiplier=1, max=40),
-       stop=stop_after_attempt(3))
-@llm_cost_calculator_decorator
+
+# first call by the very first agent. 
+# @retry(wait=wait_random_exponential(multiplier=1, max=40),
+#      stop=stop_after_attempt(3))
+# @llm_cost_calculator_decorator
 def chat_completion_request(session=session, messages=messages, tools=None,
                             tool_choice=None, model=GPT_MODEL):
     try:
@@ -117,7 +170,6 @@ def execute_function_call(tool_call):
             results = api_calls.get_crypto_latest()
         elif tool_call.name == "search_for_keywords":
             arguments_str = json.loads(tool_call.arguments)
-            # print(f"Raw tool_call.arguments: {tool_call.arguments}")
             keyword = arguments_str.get("query")
             results = api_calls.search_for_keywords(keyword)
             print(results)
@@ -127,6 +179,13 @@ def execute_function_call(tool_call):
             symbol = arguments_str["symbol"]
             how_long = arguments_str["how_long"]
             results = api_calls.get_binance_data(symbol, how_long)
+        elif tool_call.name == "agent_discussion":
+            # First we should extract content from each element and form
+            # string, because chat_response object can be called only on
+            # string as content
+            content_values = [message['content'] for message in messages]
+            content_for_discussion = ' '.join(content_values)
+            results = agent_discussion(content_for_discussion)
         else:
             results = f"Error: function {tool_call.name} does not exist"
         return results
@@ -134,6 +193,26 @@ def execute_function_call(tool_call):
         print("Unable to generate Call Function")
         print(f"Exception: {e}")
         return e
+
+
+def agent_discussion(previous_conversation):
+    conservative_agent = Agent(conservative_prompt, previous_conversation)
+    aggressive_agent = Agent(aggressive_prompt, previous_conversation)
+    initial_request = ("Given an initial information please give your opinion "
+                       "on subject")
+    conservative_response = conservative_agent.generate_response(
+        initial_request)
+    print(NEON_GREEN + conservative_response + RESET_COLOR)
+
+    for i in range(1, 5):
+        aggressive_response = aggressive_agent.generate_response(
+            conservative_response)
+        print(PINK + aggressive_response + RESET_COLOR)
+
+        conservative_response = conservative_agent.generate_response(
+            aggressive_response)
+        print(NEON_GREEN + conservative_response + RESET_COLOR)
+    return conservative_response
 
 
 def main():
@@ -158,7 +237,8 @@ def main():
         assistant_message = chat_response.choices[0].message
 
         if assistant_message.tool_calls:
-            # We need loop if it happens to make several functions calls at once
+            # We need loop if it happens to make several
+            # functions calls at once
             for i in range(len(assistant_message.tool_calls)):
                 tool_call = assistant_message.tool_calls[i]
                 # Function call if chatgpt initiated tool_call.
